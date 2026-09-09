@@ -1,63 +1,78 @@
-# AI-Assisted CRM Workflow
+# AI-Assisted Lead Capture & Classification Workflow
 
-An automated lead capture, classification, and routing system built with **Typeform → Attio → AI**.
+An automated lead capture, AI classification, and routing system built with **Tally → Make → Google Sheets**.
 
 ## 🎯 Overview
 
 This workflow automatically:
-1. **Captures** marketing enquiries from Typeform
-2. **Stores** contact data in Attio
-3. **Classifies** leads using AI (Hot/Warm/Cold)
-4. **Routes** hot leads for immediate follow-up
+1. **Captures** marketing enquiries from Tally
+2. **Classifies** leads using AI (Hot/Warm/Cold)
+3. **Summarizes** each lead with AI
+4. **Saves** everything to Google Sheets
+5. **Triggers** follow-up actions for hot leads
 
 ## 🔄 Workflow Architecture
 
 ```
-Typeform (Lead Submission)
+Tally (Lead Submission)
        ↓
 Someone submits a marketing enquiry
        ↓
-Attio automatically creates/updates the contact
+Make detects the new response
        ↓
-AI reads their answers
+AI categorizes the lead
        ↓
-AI classifies them: HOT / WARM / COLD
+AI writes a short summary
        ↓
-   ┌───┴───┐
-   ↓       ↓
- HOT    WARM/COLD
-   ↓       ↓
-Create  Keep in Attio
-Task    for later
+Google Sheets saves everything
+       ↓
+   ┌───────────────┐
+   ↓               ↓
+ HOT            WARM/COLD
+   ↓               ↓
+Trigger         Keep for
+Follow-up       nurturing
 ```
 
-## 📋 Typeform Questions
+## 📋 Tally Form
 
-The form collects 5 essential fields:
+Create a form called: **Marketing Enquiry Form**
 
-1. **Name** — Contact's full name
-2. **Work Email** — Professional email address
-3. **Company** — Organization name
-4. **What are you interested in?** — Business need/solution type
-5. **When are you looking to solve this?** — Timeline
+Add these 5 questions:
+
+1. **Name** — Short answer
+2. **Email address** — Email
+3. **Company** — Short answer
+4. **What are you interested in?** — Multiple choice
+   - Marketing automation
+   - Lead generation
+   - CRM
+   - Content marketing
+   - Analytics
+5. **When are you looking to work on this?** — Multiple choice
    - Immediately
    - Within 1–3 months
    - Later / Just researching
 
-## 🗂️ Attio Fields
+✅ Free Tally accounts have Make integration built-in via webhooks.
 
-Each lead creates a contact record with these fields:
+## 📊 Google Sheets Structure
 
-| Field | Example | Description |
-|-------|---------|-------------|
-| Name | Sarah Chen | Contact's full name |
-| Email | sarah@company.com | Work email address |
-| Company | Acme | Organization name |
-| Interest | Marketing automation | Business need/solution type |
-| Timeline | Immediately | Urgency level |
-| AI Lead Type | Hot | Classification: Hot/Warm/Cold |
-| AI Summary | Looking for automation solution soon | One-sentence classification reason |
-| Status | New | Lead status in pipeline |
+Create a sheet called: **AI Marketing Leads**
+
+Column headings in Row 1:
+
+| A | B | C | D | E | F | G |
+|---|---|---|---|---|---|---|
+| Name | Email | Company | Interest | Timeline | AI Lead Type | AI Summary |
+
+**Example populated data:**
+
+| Name | Email | Company | Interest | Timeline | AI Lead Type | AI Summary |
+|------|-------|---------|----------|----------|--------------|-----------|
+| Sarah | sarah@company.com | Acme | Marketing automation | Immediately | Hot | Looking for automation solution for immediate implementation |
+| James | james@tech.io | TechCorp | CRM | 1–3 months | Warm | Exploring CRM options for team expansion |
+| Amy | amy@startup.co | StartupXYZ | Content marketing | Researching | Cold | Early-stage research, no timeline set |
 
 ## 🤖 AI Classification Rules
 
@@ -66,60 +81,122 @@ Each lead creates a contact record with these fields:
 - Ready to solve immediately or within 1–3 months
 - High purchase intent
 
-**Example:** "Sarah Chen is a marketing manager looking for a marketing automation solution within the next month."
+**Example:** "Sarah is looking for a marketing automation solution and wants to implement immediately."
 
 ### WARM 🟡
 - Relevant business need
 - Not ready for immediate action
-- Planning ahead or exploring options
+- Planning within 3+ months or exploring options
 
-**Example:** "John is researching CRM solutions for his sales team but isn't planning to implement until Q4."
+**Example:** "James is exploring CRM solutions and plans to decide within 1–3 months."
 
 ### COLD ❄️
 - Early-stage research
 - No clear timeline or urgency
 - Low purchase intent
 
-**Example:** "Alice is exploring automation tools but has no concrete timeline or current business problem."
+**Example:** "Amy is researching content marketing tools but has no concrete timeline."
 
-## 🚀 Automation Logic
+## 🚀 Make Workflow Setup
 
-### If Lead is HOT
-- ✓ Classify as "Hot" in Attio
-- ✓ Create a follow-up task (auto-assigned or manually)
-- ✓ Set Status to "New"
-- ✓ Flag for immediate sales outreach
+### Step 1: Create the Scenario
 
-### If Lead is WARM or COLD
-- ✓ Classify accordingly in Attio
-- ✓ Keep in pipeline for nurture
-- ✓ Set Status to "New"
-- ✓ Schedule for later follow-up
+1. Go to **Make.com** (free account)
+2. Click **Scenarios → Create a new scenario**
+3. Click the **+** button and search for **Tally**
+4. Select **Watch New Responses**
+5. Authorize Tally and select your form
+
+This is your **trigger**: When someone submits Tally → Make starts automatically
+
+### Step 2: Extract Form Data
+
+Add a **Text Aggregator** or **Parse JSON** module to extract:
+- Name
+- Email
+- Company
+- Interest (choice)
+- Timeline (choice)
+
+### Step 3: AI Classification
+
+Add **Make AI Toolkit** (or OpenAI) module:
+
+**Prompt:**
+```
+Classify this lead as HOT, WARM, or COLD based on their answers:
+- Interest: {Interest}
+- Timeline: {Timeline}
+
+Rules:
+HOT: Clear business need + Immediately or 1–3 months
+WARM: Relevant need but 3+ months or exploring
+COLD: Researching or no timeline
+
+Return ONLY the classification (Hot/Warm/Cold).
+```
+
+### Step 4: AI Summary
+
+Add another **AI Toolkit** module:
+
+**Prompt:**
+```
+Write a one-sentence summary of this lead's needs:
+Name: {Name}
+Interest: {Interest}
+Timeline: {Timeline}
+
+Be concise and action-oriented.
+```
+
+### Step 5: Save to Google Sheets
+
+Add **Google Sheets** module:
+- Select your **AI Marketing Leads** sheet
+- Action: **Add a row**
+- Map the fields:
+  - A (Name) → {Name}
+  - B (Email) → {Email}
+  - C (Company) → {Company}
+  - D (Interest) → {Interest}
+  - E (Timeline) → {Timeline}
+  - F (AI Lead Type) → {AI Classification}
+  - G (AI Summary) → {AI Summary}
+
+### Step 6: Hot Lead Trigger (Optional)
+
+Add an **IF** router after classification:
+- **IF** AI Lead Type = "Hot"
+  - **THEN:** Send email notification / Slack message / Create calendar event
+  - Trigger your follow-up action
 
 ## 🔧 Setup Checklist
 
-- [ ] Create Typeform with 5 questions
-- [ ] Set up Attio webhook to receive form submissions
-- [ ] Create Attio contact fields:
-  - Name, Email, Company, Interest, Timeline
-  - AI Lead Type, AI Summary, Status
-- [ ] Connect AI classification tool (e.g., OpenAI, Claude via Zapier/Make)
-- [ ] Configure conditional routing:
-  - Hot → Create follow-up task
-  - Warm/Cold → Add to nurture list
-- [ ] Test end-to-end with sample submissions
+- [ ] Create Tally form with 5 questions
+- [ ] Create Google Sheet **AI Marketing Leads** with 7 columns
+- [ ] Create Make account and authorize Tally + Google Sheets
+- [ ] Set up Make scenario:
+  - [ ] Tally trigger (Watch New Responses)
+  - [ ] AI classification module
+  - [ ] AI summary module
+  - [ ] Google Sheets add row action
+  - [ ] (Optional) Hot lead follow-up trigger
+- [ ] Test end-to-end with sample Tally submission
+- [ ] Turn on scenario automation
 
 ## 📊 Key Metrics
 
 Track the effectiveness of this workflow:
-- **Lead capture rate** — Typeform submissions → Attio contacts
-- **Classification accuracy** — Manual review of AI classifications
-- **Hot lead conversion** — HOT leads → Booked calls/deals
-- **Response time** — Follow-up task creation time
+- **Lead capture rate** — Tally submissions → Google Sheets rows
+- **Classification accuracy** — Manual review of AI categorizations
+- **Hot lead ratio** — % of leads classified as Hot
+- **Response time** — Time from submission to sheet entry (should be <1 minute)
+- **Follow-up completion** — Hot leads → Actual follow-up actions taken
 
 ## 💡 Example Lead Flow
 
-**Input (Typeform):**
+**Input (Tally Submission):**
 ```
 Name: Sarah Chen
 Email: sarah@company.com
@@ -128,7 +205,13 @@ Interest: Marketing automation
 Timeline: Immediately
 ```
 
-**Output (Attio):**
+**Automatic Processing:**
+```
+AI Classification: Hot
+AI Summary: Looking for marketing automation solution with immediate implementation timeline
+```
+
+**Output (Google Sheets):**
 ```
 Name: Sarah Chen
 Email: sarah@company.com
@@ -137,19 +220,28 @@ Interest: Marketing automation
 Timeline: Immediately
 AI Lead Type: Hot
 AI Summary: Marketing manager seeking automation solution for immediate implementation
-Status: New
-
-Action: Create follow-up task for sales team
 ```
+
+**Trigger:** Create follow-up task / Send welcome email / Add to sales pipeline
 
 ## 🎓 What This Demonstrates
 
-✓ **CRM Integration** — Automated contact management
-✓ **AI Classification** — Smart lead scoring without manual input
-✓ **Automation** — Workflow execution at scale
-✓ **Conditional Logic** — Different actions based on lead type
-✓ **Lead Qualification** — Prioritize hot opportunities
+✓ **Form Automation** — Tally form collection
+✓ **Workflow Orchestration** — Make scenario with multiple steps
+✓ **AI Classification** — Smart lead scoring using Make AI Toolkit
+✓ **Data Pipeline** — Automatic sheet population
+✓ **Conditional Logic** — Different actions based on lead hotness
+✓ **Real-time Processing** — Instant responses from submission to sheet
+
+## 🛠️ Tech Stack
+
+- **Tally** — Free form builder with webhook support
+- **Make** — Workflow automation platform
+- **Make AI Toolkit** — AI classification & summarization
+- **Google Sheets** — Cloud spreadsheet storage
+
+All free tier options available for small-scale testing.
 
 ---
 
-**Built with:** Typeform • Attio • AI Classification • Workflow Automation
+**Built with:** Tally • Make • Google Sheets • AI Toolkit • Workflow Automation
