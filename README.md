@@ -78,7 +78,7 @@ Column headings in Row 1:
 
 ### HOT ✅
 - Clear business need identified
-- Ready to solve immediately or within 1–3 months
+- Ready to solve immediately
 - High purchase intent
 
 **Example:** "Sarah is looking for a marketing automation solution and wants to implement immediately."
